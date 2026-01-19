@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+
+const args = process.argv.slice(2);
+const command = args[0];
+
+const DATA_FILE = path.join(__dirname, "tasks.json");
+
+function loadTasks() {
+  if (!fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE, JSON.stringify([]));
+  }
+  return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+}
+
+function saveTasks(tasks) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(tasks, null, 2));
+}
+
+if (command === "add") {
+  const description = args.slice(1).join(" ");
+
+  if (!description) {
+    console.log("❌ Deskripsi task tidak boleh kosong");
+    process.exit(1);
+  }
+
+  const tasks = loadTasks();
+
+  const newTask = {
+    id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
+    description,
+    status: "todo",
+    createdAt: new Date().toISOString()
+  };
+
+  tasks.push(newTask);
+  saveTasks(tasks);
+
+  console.log("✅ Task berhasil ditambahkan");
+} else {
+  console.log("Perintah tidak dikenali");
+}
